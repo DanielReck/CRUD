@@ -1,17 +1,18 @@
-const User = require('../models/userModel');
+const Cliente = require('../models/userModel');
 
 const userController = {
     createUser: (req, res) => {
-        const newUser = {
-            username: req.body.username,
-            password: req.body.password,
-            role: req.body.role,
+        const newCliente = {
+            nome: req.body.nome,
+            email: req.body.email,
+            telefone: req.body.telefone,
+            cpf: req.body.cpf,
+            instituicao: req.body.instituicao,
+            id_endereco: req.body.id_endereco || null,
         };
 
-        User.create(newUser, (err, userId) => {
-            if (err) {
-                return res.status(500).json({ error: err });
-            }
+        Cliente.create(newCliente, (err, clienteId) => {
+            if (err) return res.status(500).json({ error: err });
             res.redirect('/users');
         });
     },
@@ -19,23 +20,17 @@ const userController = {
     getUserById: (req, res) => {
         const userId = req.params.id;
 
-        User.findById(userId, (err, user) => {
-            if (err) {
-                return res.status(500).json({ error: err });
-            }
-            if (!user) {
-                return res.status(404).json({ message: 'User not found' });
-            }
-            res.render('users/show', { user });
+        Cliente.findById(userId, (err, cliente) => {
+            if (err) return res.status(500).json({ error: err });
+            if (!cliente) return res.status(404).json({ message: 'Cliente not found' });
+            res.render('users/show', { user: cliente });
         });
     },
 
     getAllUsers: (req, res) => {
-        User.getAll((err, users) => {
-            if (err) {
-                return res.status(500).json({ error: err });
-            }
-            res.render('users/index', { users });
+        Cliente.getAll((err, clientes) => {
+            if (err) return res.status(500).json({ error: err });
+            res.render('users/index', { users: clientes });
         });
     },
 
@@ -46,29 +41,26 @@ const userController = {
     renderEditForm: (req, res) => {
         const userId = req.params.id;
 
-        User.findById(userId, (err, user) => {
-            if (err) {
-                return res.status(500).json({ error: err });
-            }
-            if (!user) {
-                return res.status(404).json({ message: 'User not found' });
-            }
-            res.render('users/edit', { user });
+        Cliente.findById(userId, (err, cliente) => {
+            if (err) return res.status(500).json({ error: err });
+            if (!cliente) return res.status(404).json({ message: 'Cliente not found' });
+            res.render('users/edit', { user: cliente });
         });
     },
 
     updateUser: (req, res) => {
         const userId = req.params.id;
-        const updatedUser = {
-            username: req.body.username,
-            password: req.body.password,
-            role: req.body.role,
+        const updatedCliente = {
+            nome: req.body.nome,
+            email: req.body.email,
+            telefone: req.body.telefone,
+            cpf: req.body.cpf,
+            instituicao: req.body.instituicao,
+            id_endereco: req.body.id_endereco || null,
         };
 
-        User.update(userId, updatedUser, (err) => {
-            if (err) {
-                return res.status(500).json({ error: err });
-            }
+        Cliente.update(userId, updatedCliente, (err) => {
+            if (err) return res.status(500).json({ error: err });
             res.redirect('/users');
         });
     },
@@ -76,10 +68,8 @@ const userController = {
     deleteUser: (req, res) => {
         const userId = req.params.id;
 
-        User.delete(userId, (err) => {
-            if (err) {
-                return res.status(500).json({ error: err });
-            }
+        Cliente.delete(userId, (err) => {
+            if (err) return res.status(500).json({ error: err });
             res.redirect('/users');
         });
     },
@@ -87,11 +77,9 @@ const userController = {
     searchUsers: (req, res) => {
         const search = req.query.search || '';
 
-        User.searchByName(search, (err, users) => {
-            if (err) {
-                return res.status(500).json({ error: err });
-            }
-            res.json({ users });
+        Cliente.searchByName(search, (err, clientes) => {
+            if (err) return res.status(500).json({ error: err });
+            res.json({ users: clientes });
         });
     },
 };

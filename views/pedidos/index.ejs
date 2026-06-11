@@ -1,0 +1,29 @@
+<h1>Pedidos</h1>
+<a href="/pedidos/new" class="btn btn-primary mb-2">Criar novo pedido</a>
+<table class="table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Cliente</th>
+      <th>Valor Total</th>
+      <th>Data</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% (pedidos||[]).forEach(function(p){ %>
+      <tr>
+        <td><%= p.id %></td>
+        <td><%= p.cliente_nome %></td>
+        <td><%= p.valor_total %></td>
+        <td><%= p.data_pedido %></td>
+        <td>
+          <a class="btn btn-sm btn-primary" href="/pedidos/<%= p.id %>">Ver</a>
+          <form action="/pedidos/<%= p.id %>?_method=DELETE" method="POST" style="display:inline;">
+            <button class="btn btn-sm btn-danger" type="submit">Deletar</button>
+          </form>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>

@@ -1,32 +1,38 @@
-<h1>Lista de usuários</h1>
+<h1>Lista de clientes</h1>
 
 <form id="searchForm" method="GET" action="/users">
-    <div class="form-group">
-        <label for="search">Buscar Usuário:</label>
-        <input type="text" id="search" name="search" class="form-control" placeholder="Digite o nome do usuário" autocomplete="off">
+    <div>
+        <label for="search">Buscar Cliente:</label>
+        <input type="text" id="search" name="search" placeholder="Digite o nome do cliente" autocomplete="off">
     </div>
 </form>
 
-<table class="table">
+<a href="/users/new">Cadastrar novo cliente</a>
+
+<table>
     <thead>
         <tr>
             <th>ID</th>
             <th>Nome</th>
-            <th>Regra</th>
-            <th>Ação</th>
+            <th>Email</th>
+            <th>Telefone</th>
+            <th>CPF</th>
+            <th>Ações</th>
         </tr>
     </thead>
     <tbody id="userTableBody">
-        <% users.forEach(user => { %>
+        <% users.forEach(function(user){ %>
             <tr>
                 <td><%= user.id %></td>
-                <td><%= user.username %></td>
-                <td><%= user.role %></td>
+                <td><%= user.nome %></td>
+                <td><%= user.email %></td>
+                <td><%= user.telefone %></td>
+                <td><%= user.cpf %></td>
                 <td>
-                    <a href="/users/<%= user.id %>" class="btn btn-primary">View</a>
-                    <a href="/users/<%= user.id %>/edit" class="btn btn-warning">Edit</a>
-                    <form action="/users/<%= user.id %>?_method=DELETE" method="POST" style="display: inline;">
-                        <button type="submit" class="btn btn-danger">Delete</button>
+                    <a href="/users/<%= user.id %>">View</a>
+                    <a href="/users/<%= user.id %>/edit">Edit</a>
+                    <form action="/users/<%= user.id %>?_method=DELETE" method="POST" style="display:inline;">
+                        <button type="submit">Delete</button>
                     </form>
                 </td>
             </tr>
@@ -37,30 +43,30 @@
 <script>
     document.getElementById('search').addEventListener('input', function() {
         const searchValue = this.value;
-
         fetch(`/users/search?search=${encodeURIComponent(searchValue)}`)
             .then(response => response.json())
             .then(data => {
                 const tbody = document.getElementById('userTableBody');
-                tbody.innerHTML = ''; // Clear existing rows
-
-                data.users.forEach(user => {
+                tbody.innerHTML = '';
+                data.users.forEach(function(user){
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td>${user.id}</td>
-                        <td>${user.username}</td>
-                        <td>${user.role}</td>
+                        <td>${user.nome}</td>
+                        <td>${user.email}</td>
+                        <td>${user.telefone || ''}</td>
+                        <td>${user.cpf || ''}</td>
                         <td>
-                            <a href="/users/${user.id}" class="btn btn-primary">View</a>
-                            <a href="/users/${user.id}/edit" class="btn btn-warning">Edit</a>
-                            <form action="/users/${user.id}?_method=DELETE" method="POST" style="display: inline;">
-                                <button type="submit" class="btn btn-danger">Delete</button>
+                            <a href="/users/${user.id}">View</a>
+                            <a href="/users/${user.id}/edit">Edit</a>
+                            <form action="/users/${user.id}?_method=DELETE" method="POST" style="display:inline;">
+                                <button type="submit">Delete</button>
                             </form>
                         </td>
                     `;
                     tbody.appendChild(tr);
                 });
             })
-            .catch(error => console.error('Error:', error));
+            .catch(err => console.error(err));
     });
 </script>

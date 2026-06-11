@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= (typeof title !== 'undefined' ? title : 'CRUD') %></title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+      body { font-family: Arial, sans-serif; background-color: #f8f9fa; }
+      .jumbotron { background-color: #007bff; color: white; padding: 2rem 1rem; margin-bottom: 2rem; border-radius: .5rem }
+      .btn-custom { background-color: #28a745; color: white; border-radius: 25px; padding: .75rem 1.5rem }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <%- include('partials/navbar') %>
+      <main class="py-4">
+        <%- body %>
+      </main>
+    </div>
+
+    <footer class="footer mt-auto py-3 bg-light text-center">
+      <div class="container"><span class="text-muted">© 2026 CRUD</span></div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  </body>
+</html>

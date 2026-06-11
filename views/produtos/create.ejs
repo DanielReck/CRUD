@@ -1,0 +1,33 @@
+<h1>Cadastrar novo produto</h1>
+
+<form action="/produtos" method="POST">
+  <div>
+    <label for="nome">Nome</label>
+    <input id="nome" name="nome" required>
+  </div>
+  <div>
+    <label for="descricao">Descrição</label>
+    <textarea id="descricao" name="descricao"></textarea>
+  </div>
+  <div>
+    <label for="preco">Preço</label>
+    <input id="preco" name="preco" type="number" step="0.01" required>
+  </div>
+  <div>
+    <label for="tamanho">Tamanho</label>
+    <input id="tamanho" name="tamanho">
+  </div>
+  <div>
+    <label for="imagem_url">Imagem URL</label>
+    <input id="imagem_url" name="imagem_url">
+  </div>
+  <div>
+    <label for="obs">Observação</label>
+    <input id="obs" name="obs">
+  </div>
+  <div>
+    <label for="disponivel">Disponível</label>
+    <input id="disponivel" name="disponivel" type="checkbox" value="1" checked>
+  </div>
+  <button type="submit">Cadastrar</button>
+</form>
