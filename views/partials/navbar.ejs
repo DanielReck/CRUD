@@ -1,32 +1,91 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <a class="navbar-brand" href="/">CRUD</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse" id="navbarNav">
-    <ul class="navbar-nav">
-      <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownUsers" role="button" data-toggle="dropdown">Usuários</a>
-        <div class="dropdown-menu" aria-labelledby="navbarDropdownUsers">
-          <a class="dropdown-item" href="/users/new">Cadastrar Usuário</a>
-          <a class="dropdown-item" href="/users">Listar Usuários</a>
-        </div>
-      </li>
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownCategorias" role="button" data-toggle="dropdown">Categorias</a>
-        <div class="dropdown-menu" aria-labelledby="navbarDropdownCategorias">
-          <a class="dropdown-item" href="/categorias/new">Cadastrar Categoria</a>
-          <a class="dropdown-item" href="/categorias">Listar Categorias</a>
-        </div>
-      </li>
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownProdutos" role="button" data-toggle="dropdown">Produtos</a>
-        <div class="dropdown-menu" aria-labelledby="navbarDropdownProdutos">
-          <a class="dropdown-item" href="/produtos/new">Cadastrar Produto</a>
-          <a class="dropdown-item" href="/produtos">Listar Produtos</a>
-        </div>
-      </li>
-    </ul>
-  </div>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="/">Cantina Federal</a>
+
+    <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarPrincipal"
+        aria-controls="navbarPrincipal"
+        aria-expanded="false"
+        aria-label="Abrir navegação"
+    >
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarPrincipal">
+        <ul class="navbar-nav">
+
+            <li class="nav-item">
+                <a class="nav-link" href="/">Início</a>
+            </li>
+
+            <li class="nav-item dropdown">
+                <a
+                    class="nav-link dropdown-toggle"
+                    href="#"
+                    id="menuClientes"
+                    role="button"
+                    data-toggle="dropdown"
+                >
+                    Clientes
+                </a>
+
+                <div class="dropdown-menu" aria-labelledby="menuClientes">
+                    <a class="dropdown-item" href="/users/new">
+                        Cadastrar cliente
+                    </a>
+
+                    <a class="dropdown-item" href="/users">
+                        Listar clientes
+                    </a>
+                </div>
+            </li>
+
+            <li class="nav-item dropdown">
+                <a
+                    class="nav-link dropdown-toggle"
+                    href="#"
+                    id="menuProdutos"
+                    role="button"
+                    data-toggle="dropdown"
+                >
+                    Produtos
+                </a>
+
+                <div class="dropdown-menu" aria-labelledby="menuProdutos">
+                    <a class="dropdown-item" href="/produtos/new">
+                        Cadastrar produto
+                    </a>
+
+                    <a class="dropdown-item" href="/produtos">
+                        Listar produtos
+                    </a>
+                </div>
+            </li>
+
+            <li class="nav-item dropdown">
+                <a
+                    class="nav-link dropdown-toggle"
+                    href="#"
+                    id="menuPedidos"
+                    role="button"
+                    data-toggle="dropdown"
+                >
+                    Pedidos
+                </a>
+
+                <div class="dropdown-menu" aria-labelledby="menuPedidos">
+                    <a class="dropdown-item" href="/pedidos/new">
+                        Criar pedido
+                    </a>
+
+                    <a class="dropdown-item" href="/pedidos">
+                        Listar pedidos
+                    </a>
+                </div>
+            </li>
+
+        </ul>
+    </div>
 </nav>
