@@ -1,31 +1,68 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><%= (typeof title !== 'undefined' ? title : 'CRUD') %></title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>
+        <%= typeof title !== 'undefined'
+            ? title
+            : 'Cantina Federal' %>
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    >
+
     <style>
-      body { font-family: Arial, sans-serif; background-color: #f8f9fa; }
-      .jumbotron { background-color: #007bff; color: white; padding: 2rem 1rem; margin-bottom: 2rem; border-radius: .5rem }
-      .btn-custom { background-color: #28a745; color: white; border-radius: 25px; padding: .75rem 1.5rem }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .jumbotron {
+            background-color: #007bff;
+            color: white;
+            padding: 2rem 1rem;
+            margin-bottom: 2rem;
+            border-radius: 0.5rem;
+        }
+
+        .btn-custom {
+            background-color: #28a745;
+            color: white;
+            border-radius: 25px;
+            padding: 0.75rem 1.5rem;
+        }
     </style>
-  </head>
-  <body>
+</head>
+
+<body>
     <div class="container">
-      <%- include('partials/navbar') %>
-      <main class="py-4">
-        <%- body %>
-      </main>
+        <%- include('partials/navbar') %>
+
+        <main class="py-4">
+            <%- body %>
+        </main>
     </div>
 
     <footer class="footer mt-auto py-3 bg-light text-center">
-      <div class="container"><span class="text-muted">Â© 2026 CRUD</span></div>
+        <div class="container">
+            <span class="text-muted">
+                &copy; 2026 Cantina Federal
+            </span>
+        </div>
     </footer>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  </body>
-</html>
 
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
