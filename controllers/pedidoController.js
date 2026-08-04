@@ -234,7 +234,12 @@ const pedidoController = {
                     .send('Pedido não encontrado.');
             }
 
-            res.redirect(`/pedidos/${id}`);
+            const destino =
+    req.body.redirecionar_para === '/cozinha'
+        ? '/cozinha'
+        : `/pedidos/${id}`;
+
+res.redirect(destino);
         } catch (erro) {
             res.status(500).json({
                 mensagem:

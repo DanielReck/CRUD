@@ -325,6 +325,67 @@ const Pedido = {
         }
     },
 
+    listarParaCozinha: async () => {
+    const [linhas] = await pool.promise().query(`
+        SELECT
+            p.id,
+            p.status,
+            p.tipo_entrega,
+            p.observacao,
+            p.data_pedido,
+            c.nome AS cliente_nome,
+            pi.quantidade,
+            pr.nome AS produto_nome
+        FROM pedidos p
+        INNER JOIN clientes c
+            ON c.id = p.id_cliente
+        INNER JOIN pedido_itens pi
+            ON pi.id_pedido = p.id
+        INNER JOIN produtos pr
+            ON pr.id = pi.id_produto
+        WHERE p.status IN (
+            'NOVO',
+            'EM_PREPARO',
+            'PRONTO'
+        )
+        ORDER BY
+            FIELD(
+                p.status,
+                'NOVO',
+                'EM_PREPARO',
+                'PRONTO'
+            ),
+            p.data_pedido ASC,
+            pi.id ASC
+    `);
+
+    const pedidosAgrupados = new Map();
+
+    linhas.forEach((linha) => {
+        if (!pedidosAgrupados.has(linha.id)) {
+            pedidosAgrupados.set(linha.id, {
+                id: linha.id,
+                status: linha.status,
+                tipo_entrega: linha.tipo_entrega,
+                observacao: linha.observacao,
+                data_pedido: linha.data_pedido,
+                cliente_nome: linha.cliente_nome,
+                itens: []
+            });
+        }
+
+        pedidosAgrupados
+            .get(linha.id)
+            .itens
+            .push({
+                produto_nome: linha.produto_nome,
+                quantidade: linha.quantidade
+            });
+    });
+
+    return Array.from(pedidosAgrupados.values());
+},
+
     atualizarStatus: async (id, status) => {
         const [resultado] = await pool
             .promise()

@@ -9,6 +9,7 @@ const indexRoutes = require('./routes/indexRoutes');
 const clienteRoutes = require('./routes/clienteRoutes');
 const produtoRoutes = require('./routes/produtoRoutes');
 const pedidoRoutes = require('./routes/pedidoRoutes');
+const cozinhaRoutes = require('./routes/cozinhaRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,12 +28,10 @@ app.use(methodOverride('_method'));
 
 // Rotas
 app.use('/', indexRoutes);
-
-
 app.use('/clientes', clienteRoutes);
-
 app.use('/produtos', produtoRoutes);
 app.use('/pedidos', pedidoRoutes);
+app.use('/cozinha', cozinhaRoutes);
 
 app.listen(PORT, () => {
     console.log(`Cantina Federal rodando em http://localhost:${PORT}`);
