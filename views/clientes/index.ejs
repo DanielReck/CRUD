@@ -1,38 +1,64 @@
 ﻿<h1>Lista de clientes</h1>
 
-<form id="searchForm" method="GET" action="/clientes">
+<form id="formPesquisa">
     <div>
-        <label for="search">Buscar Cliente:</label>
-        <input type="text" id="search" name="search" placeholder="Digite o nome do cliente" autocomplete="off">
+        <label for="search">Buscar cliente:</label>
+
+        <input
+            type="text"
+            id="search"
+            name="search"
+            placeholder="Digite o nome do cliente"
+            autocomplete="off"
+        >
     </div>
 </form>
 
-<a href="/clientes/new">Cadastrar novo cliente</a>
+<p>
+    <a href="/clientes/new">
+        Cadastrar novo cliente
+    </a>
+</p>
 
 <table>
     <thead>
         <tr>
             <th>ID</th>
             <th>Nome</th>
-            <th>Email</th>
+            <th>E-mail</th>
             <th>Telefone</th>
             <th>CPF</th>
-            <th>AÃ§Ãµes</th>
+            <th>Ações</th>
         </tr>
     </thead>
-    <tbody id="userTableBody">
-        <% users.forEach(function(user){ %>
+
+    <tbody id="tabelaClientes">
+        <% clientes.forEach(function(cliente) { %>
             <tr>
-                <td><%= user.id %></td>
-                <td><%= user.nome %></td>
-                <td><%= user.email %></td>
-                <td><%= user.telefone %></td>
-                <td><%= user.cpf %></td>
+                <td><%= cliente.id %></td>
+                <td><%= cliente.nome %></td>
+                <td><%= cliente.email || '' %></td>
+                <td><%= cliente.telefone || '' %></td>
+                <td><%= cliente.cpf || '' %></td>
+
                 <td>
-                    <a href="/clientes/<%= user.id %>">View</a>
-                    <a href="/clientes/<%= user.id %>/edit">Edit</a>
-                    <form action="/clientes/<%= user.id %>?_method=DELETE" method="POST" style="display:inline;">
-                        <button type="submit">Delete</button>
+                    <a href="/clientes/<%= cliente.id %>">
+                        Visualizar
+                    </a>
+
+                    <a href="/clientes/<%= cliente.id %>/edit">
+                        Editar
+                    </a>
+
+                    <form
+                        action="/clientes/<%= cliente.id %>?_method=DELETE"
+                        method="POST"
+                        style="display: inline;"
+                        onsubmit="return confirm('Deseja excluir este cliente?')"
+                    >
+                        <button type="submit">
+                            Excluir
+                        </button>
                     </form>
                 </td>
             </tr>
@@ -41,33 +67,67 @@
 </table>
 
 <script>
-    document.getElementById('search').addEventListener('input', function() {
-        const searchValue = this.value;
-        fetch(`/clientes/search?search=${encodeURIComponent(searchValue)}`)
-            .then(response => response.json())
-            .then(data => {
-                const tbody = document.getElementById('userTableBody');
-                tbody.innerHTML = '';
-                data.users.forEach(function(user){
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${user.id}</td>
-                        <td>${user.nome}</td>
-                        <td>${user.email}</td>
-                        <td>${user.telefone || ''}</td>
-                        <td>${user.cpf || ''}</td>
-                        <td>
-                            <a href="/clientes/${user.id}">View</a>
-                            <a href="/clientes/${user.id}/edit">Edit</a>
-                            <form action="/clientes/${user.id}?_method=DELETE" method="POST" style="display:inline;">
-                                <button type="submit">Delete</button>
-                            </form>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            })
-            .catch(err => console.error(err));
+    const campoPesquisa = document.getElementById('search');
+    const tabelaClientes = document.getElementById(
+        'tabelaClientes'
+    );
+
+    campoPesquisa.addEventListener('input', async () => {
+        try {
+            const pesquisa = encodeURIComponent(
+                campoPesquisa.value
+            );
+
+            const resposta = await fetch(
+                `/clientes/search?search=${pesquisa}`
+            );
+
+            if (!resposta.ok) {
+                throw new Error(
+                    'Não foi possível pesquisar clientes'
+                );
+            }
+
+            const dados = await resposta.json();
+
+            tabelaClientes.innerHTML = '';
+
+            dados.clientes.forEach((cliente) => {
+                const linha = document.createElement('tr');
+
+                linha.innerHTML = `
+                    <td>${cliente.id}</td>
+                    <td>${cliente.nome}</td>
+                    <td>${cliente.email || ''}</td>
+                    <td>${cliente.telefone || ''}</td>
+                    <td>${cliente.cpf || ''}</td>
+
+                    <td>
+                        <a href="/clientes/${cliente.id}">
+                            Visualizar
+                        </a>
+
+                        <a href="/clientes/${cliente.id}/edit">
+                            Editar
+                        </a>
+
+                        <form
+                            action="/clientes/${cliente.id}?_method=DELETE"
+                            method="POST"
+                            style="display: inline;"
+                            onsubmit="return confirm('Deseja excluir este cliente?')"
+                        >
+                            <button type="submit">
+                                Excluir
+                            </button>
+                        </form>
+                    </td>
+                `;
+
+                tabelaClientes.appendChild(linha);
+            });
+        } catch (erro) {
+            console.error(erro);
+        }
     });
 </script>
-

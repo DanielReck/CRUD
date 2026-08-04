@@ -1,87 +1,153 @@
 const Cliente = require('../models/clienteModel');
 
-const userController = {
-    createUser: (req, res) => {
-        const newCliente = {
-            nome: req.body.nome,
-            email: req.body.email,
-            telefone: req.body.telefone,
-            cpf: req.body.cpf,
-            instituicao: req.body.instituicao,
-            id_endereco: req.body.id_endereco || null,
-        };
+const clienteController = {
+    listarClientes: (req, res) => {
+        Cliente.getAll((erro, clientes) => {
+            if (erro) {
+                return res.status(500).json({
+                    mensagem: 'Erro ao buscar clientes',
+                    erro: erro.message
+                });
+            }
 
-        Cliente.create(newCliente, (err, clienteId) => {
-            if (err) return res.status(500).json({ error: err });
-            res.redirect('/clientes');
+            res.render('clientes/index', { clientes });
         });
     },
 
-    getUserById: (req, res) => {
-        const userId = req.params.id;
+    buscarClientePorId: (req, res) => {
+        const clienteId = req.params.id;
 
-        Cliente.findById(userId, (err, cliente) => {
-            if (err) return res.status(500).json({ error: err });
-            if (!cliente) return res.status(404).json({ message: 'Cliente not found' });
-            res.render('clientes/show', { user: cliente });
+        Cliente.findById(clienteId, (erro, cliente) => {
+            if (erro) {
+                return res.status(500).json({
+                    mensagem: 'Erro ao buscar cliente',
+                    erro: erro.message
+                });
+            }
+
+            if (!cliente) {
+                return res.status(404).send('Cliente não encontrado');
+            }
+
+            res.render('clientes/show', { cliente });
         });
     },
 
-    getAllUsers: (req, res) => {
-        Cliente.getAll((err, clientes) => {
-            if (err) return res.status(500).json({ error: err });
-            res.render('clientes/index', { users: clientes });
-        });
-    },
-
-    renderCreateForm: (req, res) => {
+    exibirFormularioCadastro: (req, res) => {
         res.render('clientes/create');
     },
 
-    renderEditForm: (req, res) => {
-        const userId = req.params.id;
-
-        Cliente.findById(userId, (err, cliente) => {
-            if (err) return res.status(500).json({ error: err });
-            if (!cliente) return res.status(404).json({ message: 'Cliente not found' });
-            res.render('clientes/edit', { user: cliente });
-        });
-    },
-
-    updateUser: (req, res) => {
-        const userId = req.params.id;
-        const updatedCliente = {
+    cadastrarCliente: (req, res) => {
+        const novoCliente = {
             nome: req.body.nome,
             email: req.body.email,
             telefone: req.body.telefone,
             cpf: req.body.cpf,
             instituicao: req.body.instituicao,
-            id_endereco: req.body.id_endereco || null,
+            id_endereco: req.body.id_endereco || null
         };
 
-        Cliente.update(userId, updatedCliente, (err) => {
-            if (err) return res.status(500).json({ error: err });
+        if (!novoCliente.nome || novoCliente.nome.trim() === '') {
+            return res.status(400).send('O nome do cliente é obrigatório');
+        }
+
+        Cliente.create(novoCliente, (erro) => {
+            if (erro) {
+                return res.status(500).json({
+                    mensagem: 'Erro ao cadastrar cliente',
+                    erro: erro.message
+                });
+            }
+
             res.redirect('/clientes');
         });
     },
 
-    deleteUser: (req, res) => {
-        const userId = req.params.id;
+    exibirFormularioEdicao: (req, res) => {
+        const clienteId = req.params.id;
 
-        Cliente.delete(userId, (err) => {
-            if (err) return res.status(500).json({ error: err });
+        Cliente.findById(clienteId, (erro, cliente) => {
+            if (erro) {
+                return res.status(500).json({
+                    mensagem: 'Erro ao buscar cliente',
+                    erro: erro.message
+                });
+            }
+
+            if (!cliente) {
+                return res.status(404).send('Cliente não encontrado');
+            }
+
+            res.render('clientes/edit', { cliente });
+        });
+    },
+
+    atualizarCliente: (req, res) => {
+        const clienteId = req.params.id;
+
+        const clienteAtualizado = {
+            nome: req.body.nome,
+            email: req.body.email,
+            telefone: req.body.telefone,
+            cpf: req.body.cpf,
+            instituicao: req.body.instituicao,
+            id_endereco: req.body.id_endereco || null
+        };
+
+        if (
+            !clienteAtualizado.nome ||
+            clienteAtualizado.nome.trim() === ''
+        ) {
+            return res.status(400).send(
+                'O nome do cliente é obrigatório'
+            );
+        }
+
+        Cliente.update(
+            clienteId,
+            clienteAtualizado,
+            (erro) => {
+                if (erro) {
+                    return res.status(500).json({
+                        mensagem: 'Erro ao atualizar cliente',
+                        erro: erro.message
+                    });
+                }
+
+                res.redirect('/clientes');
+            }
+        );
+    },
+
+    excluirCliente: (req, res) => {
+        const clienteId = req.params.id;
+
+        Cliente.delete(clienteId, (erro) => {
+            if (erro) {
+                return res.status(500).json({
+                    mensagem: 'Erro ao excluir cliente',
+                    erro: erro.message
+                });
+            }
+
             res.redirect('/clientes');
         });
     },
 
-    searchUsers: (req, res) => {
-        const search = req.query.search || '';
+    pesquisarClientes: (req, res) => {
+        const pesquisa = req.query.search || '';
 
-        Cliente.searchByName(search, (err, clientes) => {
-            if (err) return res.status(500).json({ error: err });
-            res.json({ users: clientes });
+        Cliente.searchByName(pesquisa, (erro, clientes) => {
+            if (erro) {
+                return res.status(500).json({
+                    mensagem: 'Erro ao pesquisar clientes',
+                    erro: erro.message
+                });
+            }
+
+            res.json({ clientes });
         });
-    },
+    }
 };
 
-module.exports = userController;
+module.exports = clienteController;

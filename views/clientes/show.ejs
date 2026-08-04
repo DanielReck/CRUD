@@ -1,9 +1,32 @@
-﻿<h1>Detalhes do Cliente</h1>
-<p>ID: <%= user.id %></p>
-<p>Nome: <%= user.nome %></p>
-<p>Email: <%= user.email %></p>
-<p>Telefone: <%= user.telefone %></p>
-<p>CPF: <%= user.cpf %></p>
-<p>InstituiÃ§Ã£o: <%= user.instituicao %></p>
-<a href="/clientes">Voltar</a>
+﻿<h1>Detalhes do cliente</h1>
 
+<p><strong>ID:</strong> <%= cliente.id %></p>
+<p><strong>Nome:</strong> <%= cliente.nome %></p>
+
+<p>
+    <strong>E-mail:</strong>
+    <%= cliente.email || 'Não informado' %>
+</p>
+
+<p>
+    <strong>Telefone:</strong>
+    <%= cliente.telefone || 'Não informado' %>
+</p>
+
+<p>
+    <strong>CPF:</strong>
+    <%= cliente.cpf || 'Não informado' %>
+</p>
+
+<p>
+    <strong>Instituição:</strong>
+    <%= cliente.instituicao || 'Não informada' %>
+</p>
+
+<a href="/clientes/<%= cliente.id %>/edit">
+    Editar
+</a>
+
+<a href="/clientes">
+    Voltar
+</a>
