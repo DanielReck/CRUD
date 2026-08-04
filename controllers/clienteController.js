@@ -1,152 +1,319 @@
 const Cliente = require('../models/clienteModel');
 
-const clienteController = {
-    listarClientes: (req, res) => {
-        Cliente.getAll((erro, clientes) => {
-            if (erro) {
-                return res.status(500).json({
-                    mensagem: 'Erro ao buscar clientes',
-                    erro: erro.message
-                });
-            }
+function limparCampo(valor) {
+    if (typeof valor !== 'string') {
+        return null;
+    }
 
-            res.render('clientes/index', { clientes });
-        });
+    const campo = valor.trim();
+
+    return campo || null;
+}
+
+function normalizarCep(valor) {
+    const cep = limparCampo(valor);
+
+    if (!cep) {
+        return null;
+    }
+
+    const numeros = cep.replace(/\D/g, '');
+
+    if (numeros.length === 8) {
+        return (
+            numeros.substring(0, 5) +
+            '-' +
+            numeros.substring(5)
+        );
+    }
+
+    return cep;
+}
+
+function montarCliente(body) {
+    return {
+        nome: limparCampo(body.nome),
+        email: limparCampo(body.email),
+        telefone: limparCampo(body.telefone),
+        cpf: limparCampo(body.cpf),
+        instituicao: limparCampo(body.instituicao)
+    };
+}
+
+function montarEndereco(body) {
+    const endereco = {
+        rua: limparCampo(body.rua),
+        numero: limparCampo(body.numero),
+        bairro: limparCampo(body.bairro),
+        municipio: limparCampo(body.municipio),
+        ponto_referencia:
+            limparCampo(body.ponto_referencia),
+        cep: normalizarCep(body.cep)
+    };
+
+    const algumCampoPreenchido =
+        Object.values(endereco).some(Boolean);
+
+    return algumCampoPreenchido
+        ? endereco
+        : null;
+}
+
+function validarDados(cliente, endereco) {
+    if (!cliente.nome) {
+        return 'O nome do cliente é obrigatório.';
+    }
+
+    if (
+        endereco &&
+        (
+            !endereco.rua ||
+            !endereco.bairro ||
+            !endereco.municipio
+        )
+    ) {
+        return (
+            'Ao informar um endereço, preencha ' +
+            'rua, bairro e município.'
+        );
+    }
+
+    if (
+        endereco?.cep &&
+        !/^\d{5}-\d{3}$/.test(endereco.cep)
+    ) {
+        return 'Informe o CEP no formato 00000-000.';
+    }
+
+    return null;
+}
+
+function tratarErro(res, erro, mensagem) {
+    if (erro.code === 'ER_DUP_ENTRY') {
+        return res.status(409).send(
+            'Já existe um cliente com este e-mail ou CPF.'
+        );
+    }
+
+    if (
+        erro.code ===
+        'CLIENTE_NAO_ENCONTRADO'
+    ) {
+        return res
+            .status(404)
+            .send('Cliente não encontrado.');
+    }
+
+    if (
+        erro.code ===
+        'ER_ROW_IS_REFERENCED_2'
+    ) {
+        return res.status(409).send(
+            'Este cliente possui pedidos ou outros registros vinculados e não pode ser excluído.'
+        );
+    }
+
+    console.error(erro);
+
+    return res.status(500).json({
+        mensagem,
+        erro: erro.message
+    });
+}
+
+const clienteController = {
+    listarClientes: async (req, res) => {
+        try {
+            const clientes =
+                await Cliente.listarTodos();
+
+            res.render('clientes/index', {
+                clientes
+            });
+        } catch (erro) {
+            tratarErro(
+                res,
+                erro,
+                'Erro ao buscar clientes'
+            );
+        }
     },
 
-    buscarClientePorId: (req, res) => {
-        const clienteId = req.params.id;
+    buscarClientePorId: async (req, res) => {
+        try {
+            const id = Number(req.params.id);
 
-        Cliente.findById(clienteId, (erro, cliente) => {
-            if (erro) {
-                return res.status(500).json({
-                    mensagem: 'Erro ao buscar cliente',
-                    erro: erro.message
-                });
+            if (!Number.isInteger(id) || id <= 0) {
+                return res
+                    .status(400)
+                    .send('ID de cliente inválido.');
             }
+
+            const cliente =
+                await Cliente.buscarPorId(id);
 
             if (!cliente) {
-                return res.status(404).send('Cliente não encontrado');
+                return res
+                    .status(404)
+                    .send('Cliente não encontrado.');
             }
 
-            res.render('clientes/show', { cliente });
-        });
+            res.render('clientes/show', {
+                cliente
+            });
+        } catch (erro) {
+            tratarErro(
+                res,
+                erro,
+                'Erro ao buscar cliente'
+            );
+        }
     },
 
-    exibirFormularioCadastro: (req, res) => {
+    exibirFormularioCadastro: (
+        req,
+        res
+    ) => {
         res.render('clientes/create');
     },
 
-    cadastrarCliente: (req, res) => {
-        const novoCliente = {
-            nome: req.body.nome,
-            email: req.body.email,
-            telefone: req.body.telefone,
-            cpf: req.body.cpf,
-            instituicao: req.body.instituicao,
-            id_endereco: req.body.id_endereco || null
-        };
+    cadastrarCliente: async (req, res) => {
+        try {
+            const cliente =
+                montarCliente(req.body);
 
-        if (!novoCliente.nome || novoCliente.nome.trim() === '') {
-            return res.status(400).send('O nome do cliente é obrigatório');
-        }
+            const endereco =
+                montarEndereco(req.body);
 
-        Cliente.create(novoCliente, (erro) => {
-            if (erro) {
-                return res.status(500).json({
-                    mensagem: 'Erro ao cadastrar cliente',
-                    erro: erro.message
-                });
+            const erroValidacao =
+                validarDados(cliente, endereco);
+
+            if (erroValidacao) {
+                return res
+                    .status(400)
+                    .send(erroValidacao);
             }
 
-            res.redirect('/clientes');
-        });
-    },
+            const idCliente =
+                await Cliente.cadastrarCompleto(
+                    cliente,
+                    endereco
+                );
 
-    exibirFormularioEdicao: (req, res) => {
-        const clienteId = req.params.id;
-
-        Cliente.findById(clienteId, (erro, cliente) => {
-            if (erro) {
-                return res.status(500).json({
-                    mensagem: 'Erro ao buscar cliente',
-                    erro: erro.message
-                });
-            }
-
-            if (!cliente) {
-                return res.status(404).send('Cliente não encontrado');
-            }
-
-            res.render('clientes/edit', { cliente });
-        });
-    },
-
-    atualizarCliente: (req, res) => {
-        const clienteId = req.params.id;
-
-        const clienteAtualizado = {
-            nome: req.body.nome,
-            email: req.body.email,
-            telefone: req.body.telefone,
-            cpf: req.body.cpf,
-            instituicao: req.body.instituicao,
-            id_endereco: req.body.id_endereco || null
-        };
-
-        if (
-            !clienteAtualizado.nome ||
-            clienteAtualizado.nome.trim() === ''
-        ) {
-            return res.status(400).send(
-                'O nome do cliente é obrigatório'
+            res.redirect(`/clientes/${idCliente}`);
+        } catch (erro) {
+            tratarErro(
+                res,
+                erro,
+                'Erro ao cadastrar cliente'
             );
         }
-
-        Cliente.update(
-            clienteId,
-            clienteAtualizado,
-            (erro) => {
-                if (erro) {
-                    return res.status(500).json({
-                        mensagem: 'Erro ao atualizar cliente',
-                        erro: erro.message
-                    });
-                }
-
-                res.redirect('/clientes');
-            }
-        );
     },
 
-    excluirCliente: (req, res) => {
-        const clienteId = req.params.id;
+    exibirFormularioEdicao: async (
+        req,
+        res
+    ) => {
+        try {
+            const cliente =
+                await Cliente.buscarPorId(
+                    Number(req.params.id)
+                );
 
-        Cliente.delete(clienteId, (erro) => {
-            if (erro) {
-                return res.status(500).json({
-                    mensagem: 'Erro ao excluir cliente',
-                    erro: erro.message
-                });
+            if (!cliente) {
+                return res
+                    .status(404)
+                    .send('Cliente não encontrado.');
+            }
+
+            res.render('clientes/edit', {
+                cliente
+            });
+        } catch (erro) {
+            tratarErro(
+                res,
+                erro,
+                'Erro ao buscar cliente'
+            );
+        }
+    },
+
+    atualizarCliente: async (req, res) => {
+        try {
+            const id = Number(req.params.id);
+
+            const cliente =
+                montarCliente(req.body);
+
+            const endereco =
+                montarEndereco(req.body);
+
+            const erroValidacao =
+                validarDados(cliente, endereco);
+
+            if (erroValidacao) {
+                return res
+                    .status(400)
+                    .send(erroValidacao);
+            }
+
+            await Cliente.atualizarCompleto(
+                id,
+                cliente,
+                endereco
+            );
+
+            res.redirect(`/clientes/${id}`);
+        } catch (erro) {
+            tratarErro(
+                res,
+                erro,
+                'Erro ao atualizar cliente'
+            );
+        }
+    },
+
+    excluirCliente: async (req, res) => {
+        try {
+            const excluidos =
+                await Cliente.excluirCompleto(
+                    Number(req.params.id)
+                );
+
+            if (excluidos === 0) {
+                return res
+                    .status(404)
+                    .send('Cliente não encontrado.');
             }
 
             res.redirect('/clientes');
-        });
+        } catch (erro) {
+            tratarErro(
+                res,
+                erro,
+                'Erro ao excluir cliente'
+            );
+        }
     },
 
-    pesquisarClientes: (req, res) => {
-        const pesquisa = req.query.search || '';
+    pesquisarClientes: async (req, res) => {
+        try {
+            const pesquisa =
+                req.query.search || '';
 
-        Cliente.searchByName(pesquisa, (erro, clientes) => {
-            if (erro) {
-                return res.status(500).json({
-                    mensagem: 'Erro ao pesquisar clientes',
-                    erro: erro.message
-                });
-            }
+            const clientes =
+                await Cliente.pesquisarPorNome(
+                    pesquisa
+                );
 
             res.json({ clientes });
-        });
+        } catch (erro) {
+            tratarErro(
+                res,
+                erro,
+                'Erro ao pesquisar clientes'
+            );
+        }
     }
 };
 
