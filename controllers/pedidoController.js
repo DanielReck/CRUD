@@ -1,74 +1,269 @@
 const Pedido = require('../models/pedidoModel');
-const PedidoItem = require('../models/pedidoItemModel');
-const FormaPagamento = require('../models/formasPagamentoModel');
+
+const STATUS_VALIDOS = [
+    'NOVO',
+    'EM_PREPARO',
+    'PRONTO',
+    'EM_ENTREGA',
+    'ENTREGUE',
+    'CANCELADO'
+];
+
+function transformarItens(body) {
+    /*
+     * O formulário antigo usa "items".
+     * O novo formulário usará "itens".
+     * Assim os dois formatos funcionam temporariamente.
+     */
+    const itensRecebidos =
+        body.itens || body.items || [];
+
+    const lista = Array.isArray(itensRecebidos)
+        ? itensRecebidos
+        : [itensRecebidos];
+
+    return lista
+        .filter((item) => {
+            return item && item.id_produto;
+        })
+        .map((item) => {
+            return {
+                id_produto: Number(
+                    item.id_produto
+                ),
+
+                quantidade: Number(
+                    item.quantidade
+                )
+            };
+        });
+}
+
+function validarPedido(dadosPedido) {
+    if (
+        !Number.isInteger(dadosPedido.id_cliente) ||
+        dadosPedido.id_cliente <= 0
+    ) {
+        return 'Selecione um cliente válido.';
+    }
+
+    if (
+        !['RETIRADA', 'ENTREGA'].includes(
+            dadosPedido.tipo_entrega
+        )
+    ) {
+        return 'O tipo de entrega é inválido.';
+    }
+
+    if (dadosPedido.itens.length === 0) {
+        return 'O pedido precisa ter pelo menos um item.';
+    }
+
+    const itemInvalido = dadosPedido.itens.some(
+        (item) => {
+            return (
+                !Number.isInteger(item.id_produto) ||
+                item.id_produto <= 0 ||
+                !Number.isInteger(item.quantidade) ||
+                item.quantidade <= 0
+            );
+        }
+    );
+
+    if (itemInvalido) {
+        return 'Os produtos e quantidades precisam ser válidos.';
+    }
+
+    return null;
+}
 
 const pedidoController = {
-    index: (req, res) => {
-        Pedido.getAll((err, pedidos) => {
-            if (err) return res.status(500).json({ error: err });
-            res.render('pedidos/index', { pedidos });
-        });
-    },
+    listarPedidos: async (req, res) => {
+        try {
+            const pedidos =
+                await Pedido.listarTodos();
 
-    renderCreate: (req, res) => {
-        FormaPagamento.getAll((err, formas) => {
-            if (err) return res.status(500).json({ error: err });
-            res.render('pedidos/create', { formas });
-        });
-    },
-
-    create: (req, res) => {
-        // basic create: create pedido and its items (items expected as array in body)
-        const pedido = {
-            id_cliente: req.body.id_cliente,
-            id_forma_pagamento: req.body.id_forma_pagamento || null,
-            tipo_entrega: req.body.tipo_entrega || 'RETIRADA',
-            observacao: req.body.observacao || null,
-            valor_total: parseFloat(req.body.valor_total) || 0.0,
-        };
-
-        Pedido.create(pedido, (err, pedidoId) => {
-            if (err) return res.status(500).json({ error: err });
-
-            const items = Array.isArray(req.body.items) ? req.body.items : [];
-            // items: [{id_produto, quantidade, preco_unitario}]
-            let created = 0;
-            if (items.length === 0) return res.redirect('/pedidos');
-            items.forEach(item => {
-                const it = {
-                    id_pedido: pedidoId,
-                    id_produto: item.id_produto,
-                    quantidade: item.quantidade || 1,
-                    preco_unitario: item.preco_unitario || 0.0
-                };
-                PedidoItem.create(it, (err2) => {
-                    created++;
-                    if (created === items.length) {
-                        res.redirect('/pedidos/' + pedidoId);
-                    }
-                });
+            res.render('pedidos/index', {
+                pedidos
             });
-        });
-    },
-
-    show: (req, res) => {
-        const id = req.params.id;
-        Pedido.findById(id, (err, pedido) => {
-            if (err) return res.status(500).json({ error: err });
-            if (!pedido) return res.status(404).send('Pedido not found');
-            PedidoItem.findByPedidoId(id, (err2, items) => {
-                if (err2) return res.status(500).json({ error: err2 });
-                res.render('pedidos/show', { pedido, items });
+        } catch (erro) {
+            res.status(500).json({
+                mensagem: 'Erro ao buscar pedidos',
+                erro: erro.message
             });
-        });
+        }
     },
 
-    delete: (req, res) => {
-        const id = req.params.id;
-        Pedido.delete(id, (err) => {
-            if (err) return res.status(500).json({ error: err });
+    exibirFormularioCadastro: async (
+        req,
+        res
+    ) => {
+        try {
+            const dados =
+                await Pedido.buscarDadosFormulario();
+
+            res.render('pedidos/create', {
+                clientes: dados.clientes,
+                formas: dados.formas,
+                produtos: dados.produtos
+            });
+        } catch (erro) {
+            res.status(500).json({
+                mensagem:
+                    'Erro ao carregar o formulário',
+                erro: erro.message
+            });
+        }
+    },
+
+    cadastrarPedido: async (req, res) => {
+        try {
+            const idFormaPagamento =
+                req.body.id_forma_pagamento
+                    ? Number(
+                        req.body.id_forma_pagamento
+                    )
+                    : null;
+
+            const dadosPedido = {
+                id_cliente: Number(
+                    req.body.id_cliente
+                ),
+
+                id_forma_pagamento:
+                    idFormaPagamento,
+
+                tipo_entrega:
+                    req.body.tipo_entrega,
+
+                observacao:
+                    req.body.observacao
+                        ? req.body.observacao.trim()
+                        : null,
+
+                itens: transformarItens(req.body)
+            };
+
+            const erroValidacao =
+                validarPedido(dadosPedido);
+
+            if (erroValidacao) {
+                return res
+                    .status(400)
+                    .send(erroValidacao);
+            }
+
+            const resultado =
+                await Pedido.criarCompleto(
+                    dadosPedido
+                );
+
+            res.redirect(
+                `/pedidos/${resultado.pedidoId}`
+            );
+        } catch (erro) {
+            res.status(500).json({
+                mensagem: 'Erro ao criar pedido',
+                erro: erro.message
+            });
+        }
+    },
+
+    visualizarPedido: async (req, res) => {
+        try {
+            const id = Number(req.params.id);
+
+            if (
+                !Number.isInteger(id) ||
+                id <= 0
+            ) {
+                return res
+                    .status(400)
+                    .send('ID de pedido inválido.');
+            }
+
+            const [pedido, itens] =
+                await Promise.all([
+                    Pedido.buscarPorId(id),
+                    Pedido.buscarItens(id)
+                ]);
+
+            if (!pedido) {
+                return res
+                    .status(404)
+                    .send('Pedido não encontrado.');
+            }
+
+            /*
+             * Mantemos o nome "items" porque a tela
+             * atual ainda utiliza essa variável.
+             */
+            res.render('pedidos/show', {
+                pedido,
+                items: itens,
+                itens
+            });
+        } catch (erro) {
+            res.status(500).json({
+                mensagem: 'Erro ao buscar pedido',
+                erro: erro.message
+            });
+        }
+    },
+
+    atualizarStatus: async (req, res) => {
+        try {
+            const id = Number(req.params.id);
+            const status = req.body.status;
+
+            if (!STATUS_VALIDOS.includes(status)) {
+                return res
+                    .status(400)
+                    .send('Status inválido.');
+            }
+
+            const alterados =
+                await Pedido.atualizarStatus(
+                    id,
+                    status
+                );
+
+            if (alterados === 0) {
+                return res
+                    .status(404)
+                    .send('Pedido não encontrado.');
+            }
+
+            res.redirect(`/pedidos/${id}`);
+        } catch (erro) {
+            res.status(500).json({
+                mensagem:
+                    'Erro ao atualizar o status',
+                erro: erro.message
+            });
+        }
+    },
+
+    excluirPedido: async (req, res) => {
+        try {
+            const id = Number(req.params.id);
+
+            const excluidos =
+                await Pedido.excluir(id);
+
+            if (excluidos === 0) {
+                return res
+                    .status(404)
+                    .send('Pedido não encontrado.');
+            }
+
             res.redirect('/pedidos');
-        });
+        } catch (erro) {
+            res.status(500).json({
+                mensagem: 'Erro ao excluir pedido',
+                erro: erro.message
+            });
+        }
     }
 };
 

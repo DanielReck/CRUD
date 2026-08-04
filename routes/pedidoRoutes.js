@@ -1,11 +1,38 @@
 const express = require('express');
-const pedidoController = require('../controllers/pedidoController');
+const pedidoController = require(
+    '../controllers/pedidoController'
+);
+
 const router = express.Router();
 
-router.get('/', pedidoController.index);
-router.get('/new', pedidoController.renderCreate);
-router.post('/', pedidoController.create);
-router.get('/:id', pedidoController.show);
-router.delete('/:id', pedidoController.delete);
+router.get(
+    '/',
+    pedidoController.listarPedidos
+);
+
+router.get(
+    '/new',
+    pedidoController.exibirFormularioCadastro
+);
+
+router.post(
+    '/',
+    pedidoController.cadastrarPedido
+);
+
+router.put(
+    '/:id/status',
+    pedidoController.atualizarStatus
+);
+
+router.get(
+    '/:id',
+    pedidoController.visualizarPedido
+);
+
+router.delete(
+    '/:id',
+    pedidoController.excluirPedido
+);
 
 module.exports = router;
