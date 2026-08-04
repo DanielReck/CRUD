@@ -1,4 +1,4 @@
-<h1>Lista de produtos</h1>
+﻿<h1>Lista de produtos</h1>
 
 <form method="GET" action="/produtos">
   <div>
@@ -20,11 +20,11 @@
     <tr>
       <th>ID</th>
       <th>Nome</th>
-      <th>Descrição</th>
-      <th>Preço</th>
+      <th>DescriÃ§Ã£o</th>
+      <th>PreÃ§o</th>
       <th>Tamanho</th>
-      <th>Disponível</th>
-      <th>Ações</th>
+      <th>DisponÃ­vel</th>
+      <th>AÃ§Ãµes</th>
     </tr>
   </thead>
   <tbody>
@@ -35,7 +35,7 @@
         <td><%= produto.descricao %></td>
         <td><%= produto.preco %></td>
         <td><%= produto.tamanho %></td>
-        <td><%= produto.disponivel ? 'Sim' : 'Não' %></td>
+        <td><%= produto.disponivel ? 'Sim' : 'NÃ£o' %></td>
         <td>
           <a href="/produtos/<%= produto.id %>">View</a>
           <a href="/produtos/<%= produto.id %>/edit">Edit</a>
@@ -47,3 +47,4 @@
     <% }) %>
   </tbody>
 </table>
+

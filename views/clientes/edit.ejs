@@ -1,6 +1,6 @@
-<h1>Editar Cliente</h1>
+﻿<h1>Editar Cliente</h1>
 
-<form action="/users/<%= user.id %>?_method=PUT" method="POST">
+<form action="/clientes/<%= user.id %>?_method=PUT" method="POST">
   <div>
     <label for="nome">Nome</label>
     <input id="nome" name="nome" value="<%= user.nome %>" required>
@@ -18,9 +18,10 @@
     <input id="cpf" name="cpf" value="<%= user.cpf %>">
   </div>
   <div>
-    <label for="instituicao">Instituição</label>
+    <label for="instituicao">InstituiÃ§Ã£o</label>
     <input id="instituicao" name="instituicao" value="<%= user.instituicao %>">
   </div>
   <button type="submit">Salvar</button>
 </form>
  
+

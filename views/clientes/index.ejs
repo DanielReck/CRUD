@@ -1,13 +1,13 @@
-<h1>Lista de clientes</h1>
+﻿<h1>Lista de clientes</h1>
 
-<form id="searchForm" method="GET" action="/users">
+<form id="searchForm" method="GET" action="/clientes">
     <div>
         <label for="search">Buscar Cliente:</label>
         <input type="text" id="search" name="search" placeholder="Digite o nome do cliente" autocomplete="off">
     </div>
 </form>
 
-<a href="/users/new">Cadastrar novo cliente</a>
+<a href="/clientes/new">Cadastrar novo cliente</a>
 
 <table>
     <thead>
@@ -17,7 +17,7 @@
             <th>Email</th>
             <th>Telefone</th>
             <th>CPF</th>
-            <th>Ações</th>
+            <th>AÃ§Ãµes</th>
         </tr>
     </thead>
     <tbody id="userTableBody">
@@ -29,9 +29,9 @@
                 <td><%= user.telefone %></td>
                 <td><%= user.cpf %></td>
                 <td>
-                    <a href="/users/<%= user.id %>">View</a>
-                    <a href="/users/<%= user.id %>/edit">Edit</a>
-                    <form action="/users/<%= user.id %>?_method=DELETE" method="POST" style="display:inline;">
+                    <a href="/clientes/<%= user.id %>">View</a>
+                    <a href="/clientes/<%= user.id %>/edit">Edit</a>
+                    <form action="/clientes/<%= user.id %>?_method=DELETE" method="POST" style="display:inline;">
                         <button type="submit">Delete</button>
                     </form>
                 </td>
@@ -43,7 +43,7 @@
 <script>
     document.getElementById('search').addEventListener('input', function() {
         const searchValue = this.value;
-        fetch(`/users/search?search=${encodeURIComponent(searchValue)}`)
+        fetch(`/clientes/search?search=${encodeURIComponent(searchValue)}`)
             .then(response => response.json())
             .then(data => {
                 const tbody = document.getElementById('userTableBody');
@@ -57,9 +57,9 @@
                         <td>${user.telefone || ''}</td>
                         <td>${user.cpf || ''}</td>
                         <td>
-                            <a href="/users/${user.id}">View</a>
-                            <a href="/users/${user.id}/edit">Edit</a>
-                            <form action="/users/${user.id}?_method=DELETE" method="POST" style="display:inline;">
+                            <a href="/clientes/${user.id}">View</a>
+                            <a href="/clientes/${user.id}/edit">Edit</a>
+                            <form action="/clientes/${user.id}?_method=DELETE" method="POST" style="display:inline;">
                                 <button type="submit">Delete</button>
                             </form>
                         </td>
@@ -70,3 +70,4 @@
             .catch(err => console.error(err));
     });
 </script>
+

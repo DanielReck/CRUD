@@ -6,7 +6,7 @@ const methodOverride = require('method-override');
 const expressLayouts = require('express-ejs-layouts');
 
 const indexRoutes = require('./routes/indexRoutes');
-const userRoutes = require('./routes/userRoutes');
+const clienteRoutes = require('./routes/clienteRoutes');
 const produtoRoutes = require('./routes/produtoRoutes');
 const pedidoRoutes = require('./routes/pedidoRoutes');
 
@@ -28,9 +28,8 @@ app.use(methodOverride('_method'));
 // Rotas
 app.use('/', indexRoutes);
 
-// Por enquanto continua /users.
-// Depois vamos renomear para /clientes.
-app.use('/users', userRoutes);
+
+app.use('/clientes', clienteRoutes);
 
 app.use('/produtos', produtoRoutes);
 app.use('/pedidos', pedidoRoutes);

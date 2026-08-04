@@ -1,4 +1,4 @@
-const Cliente = require('../models/userModel');
+const Cliente = require('../models/clienteModel');
 
 const userController = {
     createUser: (req, res) => {
@@ -13,7 +13,7 @@ const userController = {
 
         Cliente.create(newCliente, (err, clienteId) => {
             if (err) return res.status(500).json({ error: err });
-            res.redirect('/users');
+            res.redirect('/clientes');
         });
     },
 
@@ -23,19 +23,19 @@ const userController = {
         Cliente.findById(userId, (err, cliente) => {
             if (err) return res.status(500).json({ error: err });
             if (!cliente) return res.status(404).json({ message: 'Cliente not found' });
-            res.render('users/show', { user: cliente });
+            res.render('clientes/show', { user: cliente });
         });
     },
 
     getAllUsers: (req, res) => {
         Cliente.getAll((err, clientes) => {
             if (err) return res.status(500).json({ error: err });
-            res.render('users/index', { users: clientes });
+            res.render('clientes/index', { users: clientes });
         });
     },
 
     renderCreateForm: (req, res) => {
-        res.render('users/create');
+        res.render('clientes/create');
     },
 
     renderEditForm: (req, res) => {
@@ -44,7 +44,7 @@ const userController = {
         Cliente.findById(userId, (err, cliente) => {
             if (err) return res.status(500).json({ error: err });
             if (!cliente) return res.status(404).json({ message: 'Cliente not found' });
-            res.render('users/edit', { user: cliente });
+            res.render('clientes/edit', { user: cliente });
         });
     },
 
@@ -61,7 +61,7 @@ const userController = {
 
         Cliente.update(userId, updatedCliente, (err) => {
             if (err) return res.status(500).json({ error: err });
-            res.redirect('/users');
+            res.redirect('/clientes');
         });
     },
 
@@ -70,7 +70,7 @@ const userController = {
 
         Cliente.delete(userId, (err) => {
             if (err) return res.status(500).json({ error: err });
-            res.redirect('/users');
+            res.redirect('/clientes');
         });
     },
 
