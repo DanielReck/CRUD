@@ -9,12 +9,12 @@ const STATUS_VALIDOS = [
     'CANCELADO'
 ];
 
+const DESTINOS_PERMITIDOS = [
+    '/cozinha',
+    '/entregas'
+];
+
 function transformarItens(body) {
-    /*
-     * O formulário antigo usa "items".
-     * O novo formulário usará "itens".
-     * Assim os dois formatos funcionam temporariamente.
-     */
     const itensRecebidos =
         body.itens || body.items || [];
 
@@ -39,12 +39,32 @@ function transformarItens(body) {
         });
 }
 
+function validarId(id, tipo) {
+    if (!Number.isInteger(id) || id <= 0) {
+        return `ID de ${tipo} inválido.`;
+    }
+
+    return null;
+}
+
 function validarPedido(dadosPedido) {
     if (
         !Number.isInteger(dadosPedido.id_cliente) ||
         dadosPedido.id_cliente <= 0
     ) {
         return 'Selecione um cliente válido.';
+    }
+
+    if (
+        dadosPedido.id_forma_pagamento !== null &&
+        (
+            !Number.isInteger(
+                dadosPedido.id_forma_pagamento
+            ) ||
+            dadosPedido.id_forma_pagamento <= 0
+        )
+    ) {
+        return 'Selecione uma forma de pagamento válida.';
     }
 
     if (
@@ -56,25 +76,74 @@ function validarPedido(dadosPedido) {
     }
 
     if (dadosPedido.itens.length === 0) {
-        return 'O pedido precisa ter pelo menos um item.';
+        return (
+            'O pedido precisa ter pelo menos um item.'
+        );
     }
 
-    const itemInvalido = dadosPedido.itens.some(
-        (item) => {
+    const itemInvalido =
+        dadosPedido.itens.some((item) => {
             return (
-                !Number.isInteger(item.id_produto) ||
+                !Number.isInteger(
+                    item.id_produto
+                ) ||
                 item.id_produto <= 0 ||
-                !Number.isInteger(item.quantidade) ||
+                !Number.isInteger(
+                    item.quantidade
+                ) ||
                 item.quantidade <= 0
             );
-        }
-    );
+        });
 
     if (itemInvalido) {
-        return 'Os produtos e quantidades precisam ser válidos.';
+        return (
+            'Os produtos e quantidades precisam ser válidos.'
+        );
     }
 
     return null;
+}
+
+function tratarErro(res, erro, mensagemPadrao) {
+    if (erro.code === 'CLIENTE_SEM_ENDERECO') {
+        return res
+            .status(400)
+            .send(erro.message);
+    }
+
+    if (
+        erro.code ===
+        'PEDIDO_RETIRADA_NAO_ENTREGA'
+    ) {
+        return res
+            .status(400)
+            .send(erro.message);
+    }
+
+    if (
+        erro.code ===
+        'ER_NO_REFERENCED_ROW_2'
+    ) {
+        return res.status(400).send(
+            'Um dos registros selecionados não existe mais.'
+        );
+    }
+
+    if (
+        erro.code ===
+        'ER_ROW_IS_REFERENCED_2'
+    ) {
+        return res.status(409).send(
+            'Este pedido possui registros vinculados e não pode ser excluído.'
+        );
+    }
+
+    console.error(erro);
+
+    return res.status(500).json({
+        mensagem: mensagemPadrao,
+        erro: erro.message
+    });
 }
 
 const pedidoController = {
@@ -84,13 +153,15 @@ const pedidoController = {
                 await Pedido.listarTodos();
 
             res.render('pedidos/index', {
+                title: 'Pedidos - Cantina Federal',
                 pedidos
             });
         } catch (erro) {
-            res.status(500).json({
-                mensagem: 'Erro ao buscar pedidos',
-                erro: erro.message
-            });
+            tratarErro(
+                res,
+                erro,
+                'Erro ao buscar pedidos'
+            );
         }
     },
 
@@ -103,16 +174,19 @@ const pedidoController = {
                 await Pedido.buscarDadosFormulario();
 
             res.render('pedidos/create', {
+                title:
+                    'Novo pedido - Cantina Federal',
+
                 clientes: dados.clientes,
                 formas: dados.formas,
                 produtos: dados.produtos
             });
         } catch (erro) {
-            res.status(500).json({
-                mensagem:
-                    'Erro ao carregar o formulário',
-                erro: erro.message
-            });
+            tratarErro(
+                res,
+                erro,
+                'Erro ao carregar o formulário'
+            );
         }
     },
 
@@ -124,6 +198,12 @@ const pedidoController = {
                         req.body.id_forma_pagamento
                     )
                     : null;
+
+            const observacao =
+                typeof req.body.observacao ===
+                    'string'
+                    ? req.body.observacao.trim()
+                    : '';
 
             const dadosPedido = {
                 id_cliente: Number(
@@ -137,11 +217,10 @@ const pedidoController = {
                     req.body.tipo_entrega,
 
                 observacao:
-                    req.body.observacao
-                        ? req.body.observacao.trim()
-                        : null,
+                    observacao || null,
 
-                itens: transformarItens(req.body)
+                itens:
+                    transformarItens(req.body)
             };
 
             const erroValidacao =
@@ -162,10 +241,11 @@ const pedidoController = {
                 `/pedidos/${resultado.pedidoId}`
             );
         } catch (erro) {
-            res.status(500).json({
-                mensagem: 'Erro ao criar pedido',
-                erro: erro.message
-            });
+            tratarErro(
+                res,
+                erro,
+                'Erro ao criar pedido'
+            );
         }
     },
 
@@ -173,13 +253,13 @@ const pedidoController = {
         try {
             const id = Number(req.params.id);
 
-            if (
-                !Number.isInteger(id) ||
-                id <= 0
-            ) {
+            const erroId =
+                validarId(id, 'pedido');
+
+            if (erroId) {
                 return res
                     .status(400)
-                    .send('ID de pedido inválido.');
+                    .send(erroId);
             }
 
             const [pedido, itens] =
@@ -191,23 +271,30 @@ const pedidoController = {
             if (!pedido) {
                 return res
                     .status(404)
-                    .send('Pedido não encontrado.');
+                    .send(
+                        'Pedido não encontrado.'
+                    );
             }
 
-            /*
-             * Mantemos o nome "items" porque a tela
-             * atual ainda utiliza essa variável.
-             */
             res.render('pedidos/show', {
+                title:
+                    `Pedido #${pedido.id} - Cantina Federal`,
+
                 pedido,
+
+                /*
+                 * Mantém os dois nomes para garantir
+                 * compatibilidade com telas antigas.
+                 */
                 items: itens,
                 itens
             });
         } catch (erro) {
-            res.status(500).json({
-                mensagem: 'Erro ao buscar pedido',
-                erro: erro.message
-            });
+            tratarErro(
+                res,
+                erro,
+                'Erro ao buscar pedido'
+            );
         }
     },
 
@@ -215,6 +302,15 @@ const pedidoController = {
         try {
             const id = Number(req.params.id);
             const status = req.body.status;
+
+            const erroId =
+                validarId(id, 'pedido');
+
+            if (erroId) {
+                return res
+                    .status(400)
+                    .send(erroId);
+            }
 
             if (!STATUS_VALIDOS.includes(status)) {
                 return res
@@ -231,21 +327,28 @@ const pedidoController = {
             if (alterados === 0) {
                 return res
                     .status(404)
-                    .send('Pedido não encontrado.');
+                    .send(
+                        'Pedido não encontrado.'
+                    );
             }
 
-            const destino =
-    req.body.redirecionar_para === '/cozinha'
-        ? '/cozinha'
-        : `/pedidos/${id}`;
+            const destinoSolicitado =
+                req.body.redirecionar_para;
 
-res.redirect(destino);
+            const destino =
+                DESTINOS_PERMITIDOS.includes(
+                    destinoSolicitado
+                )
+                    ? destinoSolicitado
+                    : `/pedidos/${id}`;
+
+            res.redirect(destino);
         } catch (erro) {
-            res.status(500).json({
-                mensagem:
-                    'Erro ao atualizar o status',
-                erro: erro.message
-            });
+            tratarErro(
+                res,
+                erro,
+                'Erro ao atualizar o status'
+            );
         }
     },
 
@@ -253,21 +356,33 @@ res.redirect(destino);
         try {
             const id = Number(req.params.id);
 
+            const erroId =
+                validarId(id, 'pedido');
+
+            if (erroId) {
+                return res
+                    .status(400)
+                    .send(erroId);
+            }
+
             const excluidos =
                 await Pedido.excluir(id);
 
             if (excluidos === 0) {
                 return res
                     .status(404)
-                    .send('Pedido não encontrado.');
+                    .send(
+                        'Pedido não encontrado.'
+                    );
             }
 
             res.redirect('/pedidos');
         } catch (erro) {
-            res.status(500).json({
-                mensagem: 'Erro ao excluir pedido',
-                erro: erro.message
-            });
+            tratarErro(
+                res,
+                erro,
+                'Erro ao excluir pedido'
+            );
         }
     }
 };

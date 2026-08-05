@@ -6,6 +6,7 @@ const methodOverride = require('method-override');
 const expressLayouts = require('express-ejs-layouts');
 
 const indexRoutes = require('./routes/indexRoutes');
+const entregaRoutes = require('./routes/entregaRoutes');
 const clienteRoutes = require('./routes/clienteRoutes');
 const produtoRoutes = require('./routes/produtoRoutes');
 const pedidoRoutes = require('./routes/pedidoRoutes');
@@ -27,11 +28,13 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
 
 // Rotas
+
 app.use('/', indexRoutes);
 app.use('/clientes', clienteRoutes);
 app.use('/produtos', produtoRoutes);
 app.use('/pedidos', pedidoRoutes);
 app.use('/cozinha', cozinhaRoutes);
+app.use('/entregas', entregaRoutes);
 
 app.listen(PORT, () => {
     console.log(`Cantina Federal rodando em http://localhost:${PORT}`);
