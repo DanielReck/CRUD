@@ -184,4 +184,30 @@ ENGINE = InnoDB
 AUTO_INCREMENT = 4
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_unicode_ci;
+-- ----------------------------------------------------------------------------
+-- Tabela usuarios
+-- ----------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `cantina_federal`.`usuarios` (
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `nome` VARCHAR(80) NOT NULL,
+    `email` VARCHAR(120) NOT NULL,
+    `senha` VARCHAR(255) NOT NULL,
+    `perfil` ENUM(
+        'ADMIN',
+        'FUNCIONARIO',
+        'CLIENTE'
+    ) NOT NULL DEFAULT 'CLIENTE',
+    `ativo` TINYINT(1) NOT NULL DEFAULT 1,
+    `criado_em` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `atualizado_em` DATETIME NOT NULL
+        DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`),
+    UNIQUE INDEX `uk_usuario_email` (`email` ASC)
+)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_unicode_ci;
 SET FOREIGN_KEY_CHECKS = 1;

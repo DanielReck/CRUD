@@ -1,5 +1,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="/">Cantina Federal</a>
+    <a class="navbar-brand" href="/">
+        Cantina Federal
+    </a>
 
     <button
         class="navbar-toggler"
@@ -13,88 +15,177 @@
         <span class="navbar-toggler-icon"></span>
     </button>
 
-    <div class="collapse navbar-collapse" id="navbarPrincipal">
-        <ul class="navbar-nav">
+    <div
+        class="collapse navbar-collapse"
+        id="navbarPrincipal"
+    >
+        <% if (usuarioLogado) { %>
 
-            <li class="nav-item">
-                <a class="nav-link" href="/">Início</a>
-            </li>
+            <ul class="navbar-nav mr-auto">
 
-            <li class="nav-item dropdown">
-                <a
-                    class="nav-link dropdown-toggle"
-                    href="#"
-                    id="menuClientes"
-                    role="button"
-                    data-toggle="dropdown"
+                <li class="nav-item">
+                    <a class="nav-link" href="/">
+                        Início
+                    </a>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a
+                        class="nav-link dropdown-toggle"
+                        href="#"
+                        id="menuClientes"
+                        role="button"
+                        data-toggle="dropdown"
+                    >
+                        Clientes
+                    </a>
+
+                    <div
+                        class="dropdown-menu"
+                        aria-labelledby="menuClientes"
+                    >
+                        <a
+                            class="dropdown-item"
+                            href="/clientes/new"
+                        >
+                            Cadastrar cliente
+                        </a>
+
+                        <a
+                            class="dropdown-item"
+                            href="/clientes"
+                        >
+                            Listar clientes
+                        </a>
+                    </div>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a
+                        class="nav-link dropdown-toggle"
+                        href="#"
+                        id="menuProdutos"
+                        role="button"
+                        data-toggle="dropdown"
+                    >
+                        Produtos
+                    </a>
+
+                    <div
+                        class="dropdown-menu"
+                        aria-labelledby="menuProdutos"
+                    >
+                        <a
+                            class="dropdown-item"
+                            href="/produtos/new"
+                        >
+                            Cadastrar produto
+                        </a>
+
+                        <a
+                            class="dropdown-item"
+                            href="/produtos"
+                        >
+                            Listar produtos
+                        </a>
+
+                        <div class="dropdown-divider"></div>
+
+                        <a
+                            class="dropdown-item"
+                            href="/categorias"
+                        >
+                            Categorias
+                        </a>
+                    </div>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a
+                        class="nav-link dropdown-toggle"
+                        href="#"
+                        id="menuPedidos"
+                        role="button"
+                        data-toggle="dropdown"
+                    >
+                        Pedidos
+                    </a>
+
+                    <div
+                        class="dropdown-menu"
+                        aria-labelledby="menuPedidos"
+                    >
+                        <a
+                            class="dropdown-item"
+                            href="/pedidos/new"
+                        >
+                            Criar pedido
+                        </a>
+
+                        <a
+                            class="dropdown-item"
+                            href="/pedidos"
+                        >
+                            Listar pedidos
+                        </a>
+                    </div>
+                </li>
+
+                <li class="nav-item">
+                    <a
+                        class="nav-link"
+                        href="/cozinha"
+                    >
+                        Cozinha
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a
+                        class="nav-link"
+                        href="/entregas"
+                    >
+                        Entregas
+                    </a>
+                </li>
+
+            </ul>
+
+            <div
+                class="navbar-nav align-items-lg-center"
+            >
+                <span class="navbar-text mr-lg-3">
+                    <%= usuarioLogado.nome %>
+                    — <%= usuarioLogado.perfil %>
+                </span>
+
+                <form
+                    method="POST"
+                    action="/auth/logout"
+                    class="mb-0"
                 >
-                    Clientes
-                </a>
+                    <button
+                        type="submit"
+                        class="btn btn-outline-light btn-sm"
+                    >
+                        Sair
+                    </button>
+                </form>
+            </div>
 
-                <div class="dropdown-menu" aria-labelledby="menuClientes">
-                    <a class="dropdown-item" href="/clientes/new">
-                        Cadastrar cliente
+        <% } else { %>
+
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a
+                        class="nav-link"
+                        href="/auth/login"
+                    >
+                        Entrar
                     </a>
+                </li>
+            </ul>
 
-                    <a class="dropdown-item" href="/clientes">
-                        Listar clientes
-                    </a>
-                </div>
-            </li>
-
-            <li class="nav-item dropdown">
-                <a
-                    class="nav-link dropdown-toggle"
-                    href="#"
-                    id="menuProdutos"
-                    role="button"
-                    data-toggle="dropdown"
-                >
-                    Produtos
-                </a>
-
-                <div class="dropdown-menu" aria-labelledby="menuProdutos">
-                    <a class="dropdown-item" href="/produtos/new">
-                        Cadastrar produto
-                    </a>
-
-                    <a class="dropdown-item" href="/produtos">
-                        Listar produtos
-                    </a>
-                </div>
-            </li>
-
-            <li class="nav-item dropdown">
-                <a
-                    class="nav-link dropdown-toggle"
-                    href="#"
-                    id="menuPedidos"
-                    role="button"
-                    data-toggle="dropdown"
-                >
-                    Pedidos
-                </a>
-
-                <div class="dropdown-menu" aria-labelledby="menuPedidos">
-                    <a class="dropdown-item" href="/pedidos/new">
-                        Criar pedido
-                    </a>
-
-                    <a class="dropdown-item" href="/pedidos">
-                        Listar pedidos
-                    </a>
-                </div>
-            </li>
-            <li class="nav-item">
-    <a class="nav-link" href="/cozinha">
-        Cozinha
-    </a>
-</li>
-<li class="nav-item">
-    <a class="nav-link" href="/entregas">
-        Entregas
-    </a>
-</li>
-        </ul>
+        <% } %>
     </div>
 </nav>
